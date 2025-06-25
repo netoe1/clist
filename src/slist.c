@@ -1,59 +1,50 @@
-// clist.c
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "../include/clist.h"
+#include "../include/slist.h"
 
-#pragma region Initialization
-
-void clist_init(CList *list, size_t dataSize)
+void slist_init(SList *list)
 {
     list->head = NULL;
-    list->dataSize = dataSize;
 }
 
-bool clist_isEmpty(CList *list)
+bool slist_isEmpty(SList *list)
 {
     return list->head == NULL;
 }
 
-#pragma endregion
-
-#pragma region Insertion
-
-void clist_addFirst(CList *list, void *data)
+void slist_addFirst(SList *list, const char *str)
 {
-    CNode *newNode = (CNode *)malloc(sizeof(CNode));
+    SNode *newNode = malloc(sizeof(SNode));
     if (!newNode)
         return;
 
-    newNode->data = malloc(list->dataSize);
+    // Allocate string dynamically, exact length + 1 for '\0'
+    newNode->data = malloc(strlen(str) + 1);
     if (!newNode->data)
     {
         free(newNode);
         return;
     }
+    strcpy(newNode->data, str);
 
-    memcpy(newNode->data, data, list->dataSize);
     newNode->next = list->head;
     list->head = newNode;
 }
 
-void clist_addLast(CList *list, void *data)
+void slist_addLast(SList *list, const char *str)
 {
-    CNode *newNode = (CNode *)malloc(sizeof(CNode));
+    SNode *newNode = malloc(sizeof(SNode));
     if (!newNode)
         return;
 
-    newNode->data = malloc(list->dataSize);
+    newNode->data = malloc(strlen(str) + 1);
     if (!newNode->data)
     {
         free(newNode);
         return;
     }
-
-    memcpy(newNode->data, data, list->dataSize);
+    strcpy(newNode->data, str);
     newNode->next = NULL;
 
     if (list->head == NULL)
@@ -62,7 +53,7 @@ void clist_addLast(CList *list, void *data)
     }
     else
     {
-        CNode *current = list->head;
+        SNode *current = list->head;
         while (current->next != NULL)
         {
             current = current->next;
@@ -71,16 +62,12 @@ void clist_addLast(CList *list, void *data)
     }
 }
 
-#pragma endregion
-
-#pragma region Removal
-
-bool clist_removeAt(CList *list, int index)
+bool slist_removeAt(SList *list, int index)
 {
     if (index < 0 || list->head == NULL)
         return false;
 
-    CNode *current = list->head;
+    SNode *current = list->head;
 
     if (index == 0)
     {
@@ -97,7 +84,7 @@ bool clist_removeAt(CList *list, int index)
         current = current->next;
     }
 
-    CNode *toDelete = current->next;
+    SNode *toDelete = current->next;
     if (toDelete == NULL)
         return false;
 
@@ -107,52 +94,41 @@ bool clist_removeAt(CList *list, int index)
     return true;
 }
 
-#pragma endregion
-
-#pragma region Search
-
-int clist_indexOf(CList *list, void *data, int (*cmp)(void *, void *))
+int slist_indexOf(SList *list, const char *str)
 {
-    CNode *current = list->head;
+    SNode *current = list->head;
     int index = 0;
 
     while (current != NULL)
     {
-        if (cmp(current->data, data) == 0)
+        if (strcmp(current->data, str) == 0)
         {
             return index;
         }
         current = current->next;
         index++;
     }
-
-    return -1; // Not found
+    return -1;
 }
 
-#pragma endregion
-
-#pragma region Utilities
-
-void clist_print(CList *list, void (*printFunc)(void *))
+void slist_print(SList *list)
 {
-    CNode *current = list->head;
+    SNode *current = list->head;
     printf("[");
     while (current != NULL)
     {
-        printFunc(current->data);
+        printf("\"%s\"", current->data);
         if (current->next != NULL)
-        {
             printf(" -> ");
-        }
         current = current->next;
     }
     printf("]\n");
 }
 
-int clist_count(CList *list)
+int slist_count(SList *list)
 {
     int count = 0;
-    CNode *current = list->head;
+    SNode *current = list->head;
     while (current != NULL)
     {
         count++;
@@ -161,16 +137,15 @@ int clist_count(CList *list)
     return count;
 }
 
-void clist_free(CList *list)
+void slist_free(SList *list)
 {
-    CNode *current = list->head;
+    SNode *current = list->head;
     while (current != NULL)
     {
-        CNode *next = current->next;
+        SNode *next = current->next;
         free(current->data);
         free(current);
         current = next;
     }
     list->head = NULL;
 }
-#pragma endregion
